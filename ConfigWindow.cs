@@ -32,7 +32,7 @@ public sealed class ConfigWindow : Window
     private readonly FileDialogManager fileDialog = new();
     private readonly List<IExposedPlugin> pluginChoices = [];
     private Guid removalId;
-    private bool unsavedColours;
+    private bool unsavedChanges;
 
     public ConfigWindow(IDalamudPluginInterface pluginInterface, ITextureProvider textures, Configuration configuration, ShortcutBar bar, Action save)
         : base("Barhopper###BarhopperConfig")
@@ -49,6 +49,7 @@ public sealed class ConfigWindow : Window
     public override void Draw()
     {
         DrawSelfShortcutToggle();
+        DrawBarLook();
         DrawCustomImagesToggle();
         ImGui.Separator();
         for (var index = 0; index < configuration.Shortcuts.Count; index++)
@@ -80,18 +81,18 @@ public sealed class ConfigWindow : Window
         }
 
         fileDialog.Draw();
-        if (unsavedColours && !ImGui.IsAnyItemActive())
+        if (unsavedChanges && !ImGui.IsAnyItemActive())
         {
-            unsavedColours = false;
+            unsavedChanges = false;
             save();
         }
     }
 
     public override void OnClose()
     {
-        if (unsavedColours)
+        if (unsavedChanges)
         {
-            unsavedColours = false;
+            unsavedChanges = false;
             save();
         }
     }
@@ -127,6 +128,26 @@ public sealed class ConfigWindow : Window
         }
 
         save();
+    }
+
+    private void DrawBarLook()
+    {
+        var autoHide = configuration.AutoHideBar;
+        if (ImGui.Checkbox("Hide the bar until the cursor is near it", ref autoHide))
+        {
+            configuration.AutoHideBar = autoHide;
+            save();
+        }
+
+        var minimumPercent = (int)MathF.Round(BarFader.MinimumOpacity * 100f);
+        var percent = (int)MathF.Round(configuration.BarOpacity * 100f);
+        if (ImGui.SliderInt("Bar opacity", ref percent, minimumPercent, 100, "%d%%"))
+        {
+            configuration.BarOpacity = Math.Clamp(percent, minimumPercent, 100) / 100f;
+            unsavedChanges = true;
+        }
+
+        ImGui.TextDisabled("Both apply to the whole server info bar, including the clock and other plugins' entries.");
     }
 
     private void DrawCustomImagesToggle()
@@ -380,7 +401,7 @@ public sealed class ConfigWindow : Window
 
         shortcut.TextColour = textColour;
         shortcut.GlowColour = glowColour;
-        unsavedColours = true;
+        unsavedChanges = true;
         bar.Refresh();
     }
 

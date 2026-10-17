@@ -8,6 +8,8 @@ public sealed class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 1;
     public bool CustomImages { get; set; }
+    public bool AutoHideBar { get; set; }
+    public float BarOpacity { get; set; } = 1f;
     public List<Shortcut> Shortcuts { get; set; } = [];
 
     public static Shortcut CreateSelfShortcut(string internalName)

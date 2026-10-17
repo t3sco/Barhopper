@@ -14,16 +14,18 @@ public sealed class Plugin : IDalamudPlugin
     private readonly Configuration configuration;
     private readonly ShortcutBar bar;
     private readonly ImageOverlay overlay;
+    private readonly BarFader fader;
     private readonly ConfigWindow configWindow;
     private readonly WindowSystem windowSystem = new("Barhopper");
 
-    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IPluginLog log)
+    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IFramework framework, IPluginLog log)
     {
         this.pluginInterface = pluginInterface;
         this.commandManager = commandManager;
         configuration = pluginInterface.GetPluginConfig() as Configuration ?? Configuration.CreateDefault(pluginInterface.InternalName);
         bar = new ShortcutBar(pluginInterface, dtrBar, commandManager, log, configuration);
         overlay = new ImageOverlay(configuration, bar, textureProvider, gameGui);
+        fader = new BarFader(framework, gameGui, configuration);
         configWindow = new ConfigWindow(pluginInterface, textureProvider, configuration, bar, Save);
         windowSystem.AddWindow(configWindow);
 
@@ -46,13 +48,15 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.UiBuilder.Draw -= Draw;
         commandManager.RemoveHandler(CommandName);
         windowSystem.RemoveAllWindows();
+        fader.Dispose();
         bar.Dispose();
     }
 
     private void Draw()
     {
+        fader.TrackCursor();
         windowSystem.Draw();
-        overlay.Draw();
+        overlay.Draw(fader.Opacity);
     }
 
     private void Save()

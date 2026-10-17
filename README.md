@@ -8,6 +8,7 @@ Barhopper pins plugins and chat commands to the server info bar (the strip in th
 - **Right-click** a linked icon to open that plugin's settings.
 - **Pick an icon** from the game's flat glyphs or coloured icons, and recolour the text and glow.
 - **Custom images (experimental):** use your own PNGs. The bar can only show game icons, so these are drawn on top of it.
+- **Bar opacity and auto-hide:** dim the whole server info bar, or hide it until the cursor comes near.
 - Shortcuts hide themselves while their plugin isn't loaded.
 
 Penumbra and Glamourer are set up by default. Open the settings with `/barhopper` or from the plugin installer. Reorder or hide entries in Dalamud's own Server Info Bar settings.
