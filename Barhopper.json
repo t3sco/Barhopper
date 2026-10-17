@@ -1,0 +1,15 @@
+{
+    "Author": "t3sco",
+    "Name": "Barhopper",
+    "InternalName": "Barhopper",
+    "Punchline": "Hop into any plugin from the server info bar.",
+    "Description": "Pin any plugin or chat command to the server info bar as a small icon. Click to open it, right-click for its settings. Pick from the game's flat or coloured icons, recolour them, or use your own images.",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/t3sco/Barhopper",
+    "Tags": [
+        "dtr",
+        "server info bar",
+        "shortcuts",
+        "quality of life"
+    ]
+}

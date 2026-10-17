@@ -1,0 +1,27 @@
+[
+    {
+        "Author":  "t3sco",
+        "Name":  "Barhopper",
+        "InternalName":  "Barhopper",
+        "AssemblyVersion":  "1.0.0.0",
+        "Description":  "Pin any plugin or chat command to the server info bar as a small icon. Click to open it, right-click for its settings. Pick from the game\u0027s flat or coloured icons, recolour them, or use your own images.",
+        "ApplicableVersion":  "any",
+        "Tags":  [
+                     "dtr",
+                     "server info bar",
+                     "shortcuts",
+                     "quality of life"
+                 ],
+        "DalamudApiLevel":  15,
+        "LoadRequiredState":  0,
+        "LoadSync":  false,
+        "CanUnloadAsync":  false,
+        "LoadPriority":  0,
+        "Punchline":  "Hop into any plugin from the server info bar.",
+        "AcceptsFeedback":  true,
+        "RepoUrl":  "https://github.com/t3sco/Barhopper",
+        "DownloadLinkInstall":  "https://github.com/t3sco/Barhopper/releases/download/v1.0.0.0/latest.zip",
+        "DownloadLinkUpdate":  "https://github.com/t3sco/Barhopper/releases/download/v1.0.0.0/latest.zip",
+        "LastUpdate":  "1792253366"
+    }
+]
