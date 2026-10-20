@@ -15,24 +15,26 @@ public sealed unsafe class BarFader : IDisposable
 
     private readonly IFramework framework;
     private readonly IGameGui gameGui;
+    private readonly IDtrBar dtrBar;
     private readonly Configuration configuration;
     private float fade = 1f;
     private bool cursorNear = true;
     private bool alphaApplied;
 
-    public BarFader(IFramework framework, IGameGui gameGui, Configuration configuration)
+    public BarFader(IFramework framework, IGameGui gameGui, IDtrBar dtrBar, Configuration configuration)
     {
         this.framework = framework;
         this.gameGui = gameGui;
+        this.dtrBar = dtrBar;
         this.configuration = configuration;
         framework.Update += OnUpdate;
     }
 
     public float Opacity => Math.Clamp(configuration.BarOpacity, MinimumOpacity, 1f) * fade;
 
-    public void TrackCursor()
+    public void TrackCursor(bool keepVisible)
     {
-        if (!configuration.AutoHideBar)
+        if (!configuration.AutoHideBar || keepVisible)
         {
             cursorNear = true;
             return;
@@ -44,9 +46,30 @@ public sealed unsafe class BarFader : IDisposable
             return;
         }
 
+        var min = addon.Position;
+        var max = addon.Position + addon.ScaledSize;
+        var entries = dtrBar.Entries;
+        for (var index = 0; index < entries.Count; index++)
+        {
+            var entry = entries[index];
+            if (!entry.Shown || entry.UserHidden)
+            {
+                continue;
+            }
+
+            var (entryMin, entryMax) = entry.ScreenBounds;
+            if (entryMax.X <= entryMin.X)
+            {
+                continue;
+            }
+
+            min = Vector2.Min(min, entryMin);
+            max = Vector2.Max(max, entryMax);
+        }
+
         var margin = new Vector2(NearMargin);
-        var min = addon.Position - margin;
-        var max = addon.Position + addon.ScaledSize + margin;
+        min -= margin;
+        max += margin;
         var mouse = ImGui.GetMousePos();
         cursorNear = mouse.X >= min.X && mouse.X <= max.X && mouse.Y >= min.Y && mouse.Y <= max.Y;
     }

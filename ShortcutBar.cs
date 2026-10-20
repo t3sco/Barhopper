@@ -18,17 +18,19 @@ public sealed class ShortcutBar : IDisposable
     private readonly ICommandManager commandManager;
     private readonly IPluginLog log;
     private readonly Configuration configuration;
+    private readonly MenuPopup menuPopup;
     private readonly Dictionary<Guid, IDtrBarEntry> entries = [];
     private readonly HashSet<Guid> imageShortcuts = [];
     private readonly List<Guid> staleIds = [];
 
-    public ShortcutBar(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, IPluginLog log, Configuration configuration)
+    public ShortcutBar(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, IPluginLog log, Configuration configuration, MenuPopup menuPopup)
     {
         this.pluginInterface = pluginInterface;
         this.dtrBar = dtrBar;
         this.commandManager = commandManager;
         this.log = log;
         this.configuration = configuration;
+        this.menuPopup = menuPopup;
     }
 
     public bool HasImages => imageShortcuts.Count > 0;
@@ -209,6 +211,9 @@ public sealed class ShortcutBar : IDisposable
             {
                 case ShortcutAction.Command when shortcut.Command.Length > 0:
                     commandManager.ProcessCommand(shortcut.Command);
+                    break;
+                case ShortcutAction.GameMenu when entries.TryGetValue(shortcut.Id, out var entry):
+                    menuPopup.Toggle(shortcut.MenuCategory, entry.ScreenBounds);
                     break;
                 case ShortcutAction.Settings when plugin is { HasConfigUi: true }:
                     plugin.OpenConfigUi();

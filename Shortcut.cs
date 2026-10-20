@@ -12,6 +12,7 @@ public sealed class Shortcut
     public string PluginInternalName { get; set; } = string.Empty;
     public ShortcutAction Action { get; set; } = ShortcutAction.Command;
     public string Command { get; set; } = string.Empty;
+    public uint MenuCategory { get; set; }
     public IconKind IconKind { get; set; } = IconKind.Glyph;
     public SeIconChar Glyph { get; set; } = SeIconChar.BoxedStar;
     public BitmapFontIcon GameIcon { get; set; } = BitmapFontIcon.GoldStar;
@@ -26,6 +27,7 @@ public enum ShortcutAction
     MainWindow,
     Settings,
     Command,
+    GameMenu,
 }
 
 public enum IconKind

@@ -15,18 +15,23 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ShortcutBar bar;
     private readonly ImageOverlay overlay;
     private readonly BarFader fader;
+    private readonly MenuPopup menuPopup;
+    private readonly GameMenuHider gameMenuHider;
     private readonly ConfigWindow configWindow;
     private readonly WindowSystem windowSystem = new("Barhopper");
 
-    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IFramework framework, IPluginLog log)
+    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IFramework framework, IDataManager dataManager, IPluginLog log)
     {
         this.pluginInterface = pluginInterface;
         this.commandManager = commandManager;
         configuration = pluginInterface.GetPluginConfig() as Configuration ?? Configuration.CreateDefault(pluginInterface.InternalName);
-        bar = new ShortcutBar(pluginInterface, dtrBar, commandManager, log, configuration);
+        var menu = new MainMenuData(dataManager);
+        menuPopup = new MenuPopup(menu, framework);
+        bar = new ShortcutBar(pluginInterface, dtrBar, commandManager, log, configuration, menuPopup);
         overlay = new ImageOverlay(configuration, bar, textureProvider, gameGui);
-        fader = new BarFader(framework, gameGui, configuration);
-        configWindow = new ConfigWindow(pluginInterface, textureProvider, configuration, bar, Save);
+        fader = new BarFader(framework, gameGui, dtrBar, configuration);
+        gameMenuHider = new GameMenuHider(framework, gameGui, configuration);
+        configWindow = new ConfigWindow(pluginInterface, textureProvider, configuration, bar, menu, Save);
         windowSystem.AddWindow(configWindow);
 
         commandManager.AddHandler(CommandName, new CommandInfo((_, _) => configWindow.Toggle())
@@ -48,14 +53,16 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.UiBuilder.Draw -= Draw;
         commandManager.RemoveHandler(CommandName);
         windowSystem.RemoveAllWindows();
+        gameMenuHider.Dispose();
         fader.Dispose();
         bar.Dispose();
     }
 
     private void Draw()
     {
-        fader.TrackCursor();
+        fader.TrackCursor(menuPopup.IsOpen);
         windowSystem.Draw();
+        menuPopup.Draw();
         overlay.Draw(fader.Opacity);
     }
 

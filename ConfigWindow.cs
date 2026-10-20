@@ -16,6 +16,7 @@ public sealed class ConfigWindow : Window
 {
     private const int GridColumns = 10;
     private const string ImageFilter = "Images{.png,.jpg,.jpeg,.bmp}";
+    private const string WholeMenuLabel = "Whole menu (one button)";
 
     private static readonly SeIconChar[] Glyphs = BuildGlyphs();
     private static readonly string[] GlyphTexts = Array.ConvertAll(Glyphs, glyph => glyph.ToIconString());
@@ -28,19 +29,21 @@ public sealed class ConfigWindow : Window
     private readonly ITextureProvider textures;
     private readonly Configuration configuration;
     private readonly ShortcutBar bar;
+    private readonly MainMenuData menu;
     private readonly Action save;
     private readonly FileDialogManager fileDialog = new();
     private readonly List<IExposedPlugin> pluginChoices = [];
     private Guid removalId;
     private bool unsavedChanges;
 
-    public ConfigWindow(IDalamudPluginInterface pluginInterface, ITextureProvider textures, Configuration configuration, ShortcutBar bar, Action save)
+    public ConfigWindow(IDalamudPluginInterface pluginInterface, ITextureProvider textures, Configuration configuration, ShortcutBar bar, MainMenuData menu, Action save)
         : base("Barhopper###BarhopperConfig")
     {
         this.pluginInterface = pluginInterface;
         this.textures = textures;
         this.configuration = configuration;
         this.bar = bar;
+        this.menu = menu;
         this.save = save;
         Size = new Vector2(560, 520);
         SizeCondition = ImGuiCond.FirstUseEver;
@@ -50,6 +53,7 @@ public sealed class ConfigWindow : Window
     {
         DrawSelfShortcutToggle();
         DrawBarLook();
+        DrawGameMenuSection();
         DrawCustomImagesToggle();
         ImGui.Separator();
         for (var index = 0; index < configuration.Shortcuts.Count; index++)
@@ -256,6 +260,18 @@ public sealed class ConfigWindow : Window
             ImGui.SameLine();
             DrawActionChoice(shortcut, "Run a command", ShortcutAction.Command);
         }
+        else
+        {
+            DrawActionChoice(shortcut, "Run a command", ShortcutAction.Command);
+            ImGui.SameLine();
+            DrawActionChoice(shortcut, "Open the game menu", ShortcutAction.GameMenu);
+        }
+
+        if (shortcut.Action == ShortcutAction.GameMenu)
+        {
+            DrawMenuCategoryCombo(shortcut);
+            return;
+        }
 
         if (shortcut.Action != ShortcutAction.Command)
         {
@@ -275,6 +291,117 @@ public sealed class ConfigWindow : Window
         }
 
         ImGui.TextDisabled("A command usually opens and closes the window; the other options only open it.");
+    }
+
+    private void DrawMenuCategoryCombo(Shortcut shortcut)
+    {
+        var current = menu.Find(shortcut.MenuCategory);
+        if (!ImGui.BeginCombo("Menu", current?.Name ?? WholeMenuLabel))
+        {
+            return;
+        }
+
+        if (ImGui.Selectable(WholeMenuLabel, current == null))
+        {
+            shortcut.MenuCategory = MenuPopup.WholeMenu;
+            save();
+        }
+
+        foreach (var category in menu.Categories)
+        {
+            if (ImGui.Selectable(category.Name, current == category))
+            {
+                shortcut.MenuCategory = category.Id;
+                save();
+            }
+        }
+
+        ImGui.EndCombo();
+    }
+
+    private void DrawGameMenuSection()
+    {
+        var menuShortcuts = 0;
+        var wholeMenuButtons = 0;
+        foreach (var shortcut in configuration.Shortcuts)
+        {
+            if (shortcut.Action == ShortcutAction.GameMenu)
+            {
+                menuShortcuts++;
+                if (shortcut.MenuCategory == MenuPopup.WholeMenu)
+                {
+                    wholeMenuButtons++;
+                }
+            }
+        }
+
+        if (menuShortcuts == 0)
+        {
+            if (ImGui.Button("Add the game menu to the bar"))
+            {
+                ReplaceMenuShortcuts(false);
+                configuration.HideGameMenu = true;
+                save();
+            }
+        }
+        else
+        {
+            var oneButton = menuShortcuts == 1 && wholeMenuButtons == 1;
+            if (ImGui.Checkbox("One menu button instead of an icon per category", ref oneButton))
+            {
+                ReplaceMenuShortcuts(oneButton);
+                save();
+            }
+
+            ImGui.SameLine();
+            if (ImGui.SmallButton("Remove the game menu"))
+            {
+                ReplaceMenuShortcuts(null);
+                configuration.HideGameMenu = false;
+                save();
+            }
+        }
+
+        var hideGameMenu = configuration.HideGameMenu;
+        if (ImGui.Checkbox("Hide the game's own main menu", ref hideGameMenu))
+        {
+            configuration.HideGameMenu = hideGameMenu;
+            save();
+        }
+    }
+
+    private void ReplaceMenuShortcuts(bool? oneButton)
+    {
+        var insertAt = -1;
+        for (var index = configuration.Shortcuts.Count - 1; index >= 0; index--)
+        {
+            if (configuration.Shortcuts[index].Action == ShortcutAction.GameMenu)
+            {
+                configuration.Shortcuts.RemoveAt(index);
+                insertAt = index;
+            }
+        }
+
+        if (oneButton == null)
+        {
+            return;
+        }
+
+        if (insertAt < 0)
+        {
+            insertAt = configuration.Shortcuts.Count;
+        }
+
+        if (oneButton.Value)
+        {
+            configuration.Shortcuts.Insert(insertAt, Configuration.CreateMenuShortcut(MenuPopup.WholeMenu, UniqueLabel("Menu", null)));
+            return;
+        }
+
+        foreach (var category in menu.Categories)
+        {
+            configuration.Shortcuts.Insert(insertAt++, Configuration.CreateMenuShortcut(category.Id, UniqueLabel(category.Name, null)));
+        }
     }
 
     private void DrawActionChoice(Shortcut shortcut, string label, ShortcutAction action)
