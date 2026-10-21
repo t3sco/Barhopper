@@ -25,9 +25,11 @@ Penumbra and Glamourer are set up by default. Open the settings with `/barhopper
 
 3. Open `/xlplugins`, search for **Barhopper** and install it.
 
+Updates come through Dalamud like any other plugin. To get them automatically, or a heads-up when one is out, check `/xlsettings` > **Auto-Updates**. After an update, Barhopper shows a short note about what's new.
+
 ## Releasing
 
-1. Bump `<Version>` in `Barhopper.csproj`.
+1. Bump `<Version>` in `Barhopper.csproj`, and add that version's notes to `Releases` in `WhatsNew.cs`.
 2. Run `powershell -ExecutionPolicy Bypass -File .\release.ps1`. It builds in Release and rewrites `repo.json` for that version.
 3. Create a GitHub release tagged `v<version>` (for example `v1.0.0.0`) and attach `bin\Release\Barhopper\latest.zip`.
 4. Commit and push `repo.json`. Installed copies update on the next Dalamud check.

@@ -11,6 +11,7 @@ public sealed class Configuration : IPluginConfiguration
     public bool AutoHideBar { get; set; }
     public float BarOpacity { get; set; } = 1f;
     public bool HideGameMenu { get; set; }
+    public string LastSeenVersion { get; set; } = string.Empty;
     public List<Shortcut> Shortcuts { get; set; } = [];
 
     public static Shortcut CreateMenuShortcut(uint categoryId, string label)

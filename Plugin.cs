@@ -20,11 +20,12 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ConfigWindow configWindow;
     private readonly WindowSystem windowSystem = new("Barhopper");
 
-    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IFramework framework, IDataManager dataManager, IPluginLog log)
+    public Plugin(IDalamudPluginInterface pluginInterface, IDtrBar dtrBar, ICommandManager commandManager, ITextureProvider textureProvider, IGameGui gameGui, IFramework framework, IDataManager dataManager, INotificationManager notifications, IPluginLog log)
     {
         this.pluginInterface = pluginInterface;
         this.commandManager = commandManager;
-        configuration = pluginInterface.GetPluginConfig() as Configuration ?? Configuration.CreateDefault(pluginInterface.InternalName);
+        var savedConfiguration = pluginInterface.GetPluginConfig() as Configuration;
+        configuration = savedConfiguration ?? Configuration.CreateDefault(pluginInterface.InternalName);
         var menu = new MainMenuData(dataManager);
         menuPopup = new MenuPopup(menu, framework);
         bar = new ShortcutBar(pluginInterface, dtrBar, commandManager, log, configuration, menuPopup);
@@ -43,6 +44,7 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.UiBuilder.OpenConfigUi += configWindow.Toggle;
         pluginInterface.ActivePluginsChanged += OnActivePluginsChanged;
         bar.Refresh();
+        WhatsNew.ShowIfUpdated(pluginInterface, notifications, configuration, savedConfiguration == null);
     }
 
     public void Dispose()
