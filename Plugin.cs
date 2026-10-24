@@ -30,7 +30,7 @@ public sealed class Plugin : IDalamudPlugin
         menuPopup = new MenuPopup(menu, framework);
         bar = new ShortcutBar(pluginInterface, dtrBar, commandManager, log, configuration, menuPopup);
         overlay = new ImageOverlay(configuration, bar, textureProvider, gameGui);
-        fader = new BarFader(framework, gameGui, dtrBar, configuration);
+        fader = new BarFader(pluginInterface, framework, gameGui, dtrBar, configuration);
         gameMenuHider = new GameMenuHider(framework, gameGui, configuration);
         configWindow = new ConfigWindow(pluginInterface, textureProvider, configuration, bar, menu, Save);
         windowSystem.AddWindow(configWindow);

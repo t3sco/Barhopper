@@ -1,5 +1,6 @@
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
@@ -9,10 +10,12 @@ public sealed unsafe class BarFader : IDisposable
 {
     public const float MinimumOpacity = 0.1f;
     private const string BarAddonName = "_DTR";
+    private const string OtherFaderName = "FaderPlugin";
     private const float NearMargin = 48f;
     private const float FadeSeconds = 0.08f;
     private const float SnapDistance = 0.01f;
 
+    private readonly IDalamudPluginInterface pluginInterface;
     private readonly IFramework framework;
     private readonly IGameGui gameGui;
     private readonly IDtrBar dtrBar;
@@ -21,8 +24,9 @@ public sealed unsafe class BarFader : IDisposable
     private bool cursorNear = true;
     private bool alphaApplied;
 
-    public BarFader(IFramework framework, IGameGui gameGui, IDtrBar dtrBar, Configuration configuration)
+    public BarFader(IDalamudPluginInterface pluginInterface, IFramework framework, IGameGui gameGui, IDtrBar dtrBar, Configuration configuration)
     {
+        this.pluginInterface = pluginInterface;
         this.framework = framework;
         this.gameGui = gameGui;
         this.dtrBar = dtrBar;
@@ -30,7 +34,23 @@ public sealed unsafe class BarFader : IDisposable
         framework.Update += OnUpdate;
     }
 
-    public float Opacity => Math.Clamp(configuration.BarOpacity, MinimumOpacity, 1f) * fade;
+    public float Opacity => Deferring ? ReadBarAlpha() : Math.Clamp(configuration.BarOpacity, MinimumOpacity, 1f) * fade;
+
+    private bool Deferring
+    {
+        get
+        {
+            foreach (var plugin in pluginInterface.InstalledPlugins)
+            {
+                if (plugin.IsLoaded && plugin.InternalName == OtherFaderName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 
     public void TrackCursor(bool keepVisible)
     {
@@ -85,6 +105,16 @@ public sealed unsafe class BarFader : IDisposable
 
     private void OnUpdate(IFramework updatedFramework)
     {
+        if (Deferring)
+        {
+            if (alphaApplied && SetBarAlpha(1f))
+            {
+                alphaApplied = false;
+            }
+
+            return;
+        }
+
         var target = configuration.AutoHideBar && !cursorNear ? 0f : 1f;
         fade = Approach(fade, target, (float)updatedFramework.UpdateDelta.TotalSeconds);
         var opacity = Opacity;
@@ -97,6 +127,18 @@ public sealed unsafe class BarFader : IDisposable
         {
             alphaApplied = opacity < 1f;
         }
+    }
+
+    private float ReadBarAlpha()
+    {
+        var addon = gameGui.GetAddonByName(BarAddonName);
+        if (addon.IsNull)
+        {
+            return 1f;
+        }
+
+        var root = ((AtkUnitBase*)addon.Address)->RootNode;
+        return root == null ? 1f : root->Color.A / 255f;
     }
 
     private bool SetBarAlpha(float opacity)
