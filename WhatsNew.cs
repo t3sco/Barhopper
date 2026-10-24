@@ -16,6 +16,8 @@ public static class WhatsNew
             + "• Missed it? 1.2 can put the game's main menu on the bar: /barhopper, then \"Add the game menu to the bar\"."),
         (new Version(1, 3, 1, 0),
             "• Fixed the bar flickering when Fader Plugin is also loaded; Barhopper now leaves the bar's fade to it."),
+        (new Version(1, 3, 2, 0),
+            "• New option \"Let Fader Plugin fade the bar instead\". Off by default, so the hide and opacity settings work again."),
     ];
 
     public static void ShowIfUpdated(IDalamudPluginInterface pluginInterface, INotificationManager notifications, Configuration configuration, bool freshInstall)

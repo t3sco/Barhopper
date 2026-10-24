@@ -152,6 +152,15 @@ public sealed class ConfigWindow : Window
         }
 
         ImGui.TextDisabled("Both apply to the whole server info bar, including the clock and other plugins' entries.");
+
+        var defer = configuration.DeferBarFade;
+        if (ImGui.Checkbox("Let Fader Plugin fade the bar instead", ref defer))
+        {
+            configuration.DeferBarFade = defer;
+            save();
+        }
+
+        ImGui.TextDisabled("Turns the two settings above off while Fader Plugin is loaded, so they stop fighting over the bar.");
     }
 
     private void DrawCustomImagesToggle()

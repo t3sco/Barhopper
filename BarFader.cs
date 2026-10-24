@@ -40,6 +40,11 @@ public sealed unsafe class BarFader : IDisposable
     {
         get
         {
+            if (!configuration.DeferBarFade)
+            {
+                return false;
+            }
+
             foreach (var plugin in pluginInterface.InstalledPlugins)
             {
                 if (plugin.IsLoaded && plugin.InternalName == OtherFaderName)

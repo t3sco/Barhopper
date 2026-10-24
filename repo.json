@@ -3,7 +3,7 @@
     "Author": "t3sco",
     "Name": "Barhopper",
     "InternalName": "Barhopper",
-    "AssemblyVersion": "1.3.1.0",
+    "AssemblyVersion": "1.3.2.0",
     "Description": "Pin any plugin or chat command to the server info bar as a small icon. Click to open it, right-click for its settings. Pick from the game's flat or coloured icons, recolour them, or use your own images.",
     "ApplicableVersion": "any",
     "Tags": [
@@ -20,8 +20,8 @@
     "Punchline": "Hop into any plugin from the server info bar.",
     "AcceptsFeedback": true,
     "RepoUrl": "https://github.com/t3sco/Barhopper",
-    "DownloadLinkInstall": "https://github.com/t3sco/Barhopper/releases/download/v1.3.1.0/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/t3sco/Barhopper/releases/download/v1.3.1.0/latest.zip",
-    "LastUpdate": "1792856138"
+    "DownloadLinkInstall": "https://github.com/t3sco/Barhopper/releases/download/v1.3.2.0/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/t3sco/Barhopper/releases/download/v1.3.2.0/latest.zip",
+    "LastUpdate": "1792856866"
   }
 ]
